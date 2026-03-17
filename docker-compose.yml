@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres-idb:
+    image: postgres:16-alpine
+    container_name: int1422_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: int1422_idb
+      POSTGRES_USER: int1422
+      POSTGRES_PASSWORD: int1422_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+      - ./docs/step1_integration/idb_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./docs/step1_integration/idb_sample_data.sql:/docker-entrypoint-initdb.d/02_sample_data.sql
+      - ./docs/step2_star_schema/dw_schema.sql:/docker-entrypoint-initdb.d/03_dw_schema.sql
+      - ./docs/step2_star_schema/dw_sample_data.sql:/docker-entrypoint-initdb.d/04_dw_sample_data.sql
+
+volumes:
+  pgdata:
