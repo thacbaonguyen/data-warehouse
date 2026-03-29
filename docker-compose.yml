@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres-idb:
     image: postgres:16-alpine
@@ -13,11 +11,33 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-  
       - ./docs/step1_integration/idb_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./docs/step1_integration/idb_sample_data.sql:/docker-entrypoint-initdb.d/02_sample_data.sql
       - ./docs/step2_star_schema/dw_schema.sql:/docker-entrypoint-initdb.d/03_dw_schema.sql
       - ./docs/step2_star_schema/dw_sample_data.sql:/docker-entrypoint-initdb.d/04_dw_sample_data.sql
+      - ./docs/step3_olap/cube_queries.sql:/docker-entrypoint-initdb.d/05_cube_queries.sql
+      - ./docs/step3_olap/indexes.sql:/docker-entrypoint-initdb.d/06_indexes.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U int1422 -d int1422_idb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  superset:
+    image: apache/superset:latest
+    container_name: int1422_superset
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres-idb:
+        condition: service_healthy
+    environment:
+      SUPERSET_SECRET_KEY: "int1422_secret_key_dw_2024"
+      TALISMAN_ENABLED: "False"
+    volumes:
+      - superset_data:/app/superset_home
 
 volumes:
   pgdata:
+  superset_data:
