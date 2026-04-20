@@ -24,7 +24,9 @@ services:
       retries: 10
 
   superset:
-    image: apache/superset:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
     container_name: int1422_superset
     restart: unless-stopped
     ports:
